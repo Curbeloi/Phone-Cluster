@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "La pantalla de arranque consulta el estado; el dashboard no usa IPC.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phone Cluster</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9; --text: #1b1f24; --muted: #5f6b7a; --track: #e3e7ec;
+      --accent: #2563eb; --bad: #b91c1c; --surface: #ffffff; --border: #dfe3e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1216; --text: #e6e9ee; --muted: #9aa5b4; --track: #262c35;
+        --accent: #3b82f6; --bad: #f87171; --surface: #171b21; --border: #2a3039;
+      }
+    }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: var(--bg); color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, sans-serif;
+    }
+    main { width: min(440px, calc(100vw - 32px)); text-align: center; }
+    h1 { font-size: 22px; margin: 0 0 18px; }
+    .stage { color: var(--muted); min-height: 1.5em; }
+    .bar { height: 8px; margin: 14px 0 6px; background: var(--track); border-radius: 4px; overflow: hidden; }
+    .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+    .bar.indeterminate span { width: 30%; animation: slide 1.2s ease-in-out infinite; }
+    @keyframes slide { from { margin-left: -30%; } to { margin-left: 100%; } }
+    .pct { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.5em; }
+    .error {
+      text-align: left; margin-top: 18px; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid var(--bad); background: var(--surface); color: var(--bad); overflow-wrap: anywhere;
+    }
+    .error small { display: block; margin-top: 8px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Phone Cluster</h1>
+    <p id="stage" class="stage">Arrancando…</p>
+    <div id="bar" class="bar indeterminate"><span></span></div>
+    <div id="pct" class="pct"></div>
+    <div id="error" class="error" hidden></div>
+  </main>
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    async function poll() {
+      let s;
+      try {
+        s = await window.__TAURI__.core.invoke("status");
+      } catch (e) {
+        $("stage").textContent = `Sin respuesta de la app: ${e}`;
+        return setTimeout(poll, 1000);
+      }
+      $("stage").textContent = s.stage || "Arrancando…";
+      const bar = $("bar");
+      if (s.progress != null) {
+        bar.classList.remove("indeterminate");
+        bar.firstElementChild.style.width = `${Math.min(100, s.progress * 100).toFixed(1)}%`;
+        $("pct").textContent = `${Math.floor(s.progress * 100)} %`;
+      } else {
+        bar.classList.add("indeterminate");
+        bar.firstElementChild.style.width = "";
+        $("pct").textContent = "";
+      }
+      if (s.error) {
+        bar.hidden = true;
+        const err = $("error");
+        err.hidden = false;
+        err.textContent = s.error;
+        if (s.log) {
+          const small = document.createElement("small");
+          small.textContent = `Registro: ${s.log}`;
+          err.append(small);
+        }
+        return; // la app no sigue; hay que cerrarla y volver a abrirla
+      }
+      setTimeout(poll, 400);
+    }
+    poll();
+  </script>
+</body>
+</html>

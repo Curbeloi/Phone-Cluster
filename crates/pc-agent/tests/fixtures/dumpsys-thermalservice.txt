@@ -1,0 +1,22 @@
+IsStatusOverride: false
+ThermalEventListeners:
+	callbacks: 1
+	killed: false
+	broadcasts count: -1
+ThermalStatusListeners:
+	callbacks: 1
+	killed: false
+	broadcasts count: -1
+Thermal Status: 0
+Cached temperatures:
+	Temperature{mValue=39.0, mType=0, mName=cpu-1-0-usr, mStatus=0}
+HAL Ready: true
+HAL connection:
+	ThermalHAL AIDL 1  connected: yes
+Current temperatures from HAL:
+	Temperature{mValue=31.3, mType=3, mName=skin-therm, mStatus=0}
+	Temperature{mValue=41.5, mType=0, mName=cpu-0-0-usr, mStatus=0}
+	Temperature{mValue=36.0, mType=1, mName=gpu0-usr, mStatus=0}
+	Temperature{mValue=52.0, mType=2, mName=battery, mStatus=0}
+Current cooling devices from HAL:
+	CoolingDevice{mValue=0, mType=2, mName=cpu-cluster0}

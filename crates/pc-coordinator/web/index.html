@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phone Cluster</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Phone Cluster</h1>
+      <span id="conn" class="conn" title="Conexión con el coordinador">conectando…</span>
+    </div>
+    <div class="stats" id="stats" aria-live="polite"></div>
+    <div class="endpoint">
+      <span class="label">Endpoint OpenAI</span>
+      <code id="endpoint">—</code>
+      <button type="button" id="copy" class="btn small">Copiar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="join-title">
+      <h2 id="join-title">Añadir teléfonos</h2>
+      <div class="join-grid">
+        <img id="qr" class="qr" src="api/v1/app-qr.svg" alt="Código QR para descargar la app Phone Cluster" width="180" height="180">
+        <div>
+          <ol class="howto">
+            <li>Con el teléfono en la misma Wi-Fi que este Mac, escanea el código con la cámara.</li>
+            <li>Descarga e instala la app <b>Phone Cluster</b> (Android pedirá permitir apps de esta fuente) y ábrela.</li>
+            <li>Pulsa <b>Unirme</b> en el teléfono y después <b>Aceptar</b> aquí abajo.</li>
+          </ol>
+          <p class="meta">¿La cámara no lo abre? Escribe <code id="app-url">…</code> en el navegador del teléfono.</p>
+        </div>
+      </div>
+      <p id="join-warning" class="warning" hidden></p>
+      <div id="joins" class="devices joins"></div>
+
+      <details class="advanced">
+        <summary>Alternativa avanzada: sin app, por depuración inalámbrica (ADB)</summary>
+        <ol class="howto">
+          <li>Ajustes → Opciones de desarrollador → <b>Depuración inalámbrica</b> → activar.</li>
+          <li>Pulsa <b>Vincular dispositivo con código de vinculación</b> y escribe aquí el código.</li>
+        </ol>
+        <p id="devices-warning" class="warning" hidden></p>
+        <div id="devices" class="devices"></div>
+      </details>
+    </section>
+
+    <section class="panel" aria-labelledby="split-title">
+      <div class="split-head">
+        <h2 id="split-title">Modelo dividido</h2>
+        <span id="split-phase" class="badge"></span>
+        <button type="button" id="split-toggle" class="btn small primary">Activar</button>
+      </div>
+      <p class="meta">Reparte las capas del modelo entre los teléfonos: cada uno guarda y calcula su parte, y este Mac las encadena. Sirve para modelos que no caben en un solo teléfono; con uno pequeño irá más lento, porque cada token cruza la Wi-Fi. Úsalo solo en una red de confianza.</p>
+      <p id="split-message" class="split-message" hidden></p>
+      <div id="split-layers" hidden>
+        <p id="split-summary" class="meta"></p>
+        <div id="split-bar" class="layerbar" role="img"></div>
+        <ul id="split-members" class="split-members"></ul>
+      </div>
+      <pre id="split-log" class="output split-log" hidden></pre>
+    </section>
+
+    <section aria-labelledby="nodes-title">
+      <h2 id="nodes-title" class="visually-hidden">Teléfonos</h2>
+      <div id="nodes" class="grid"></div>
+      <p id="empty" class="empty" hidden>Ningún teléfono conectado todavía. Arranca <code>pc-agent</code> en un teléfono (o <code>pc-agent --mock</code> en el Mac).</p>
+    </section>
+
+    <section class="panel" aria-labelledby="test-title">
+      <h2 id="test-title">Panel de prueba</h2>
+      <form id="test-form">
+        <div class="row">
+          <label for="model">Modelo</label>
+          <select id="model"><option value="auto">auto</option></select>
+        </div>
+        <label for="prompt" class="visually-hidden">Prompt</label>
+        <textarea id="prompt" rows="3" placeholder="Escribe un prompt…">Explica en una frase qué es un cluster de teléfonos.</textarea>
+        <div class="row">
+          <button type="submit" id="send" class="btn primary">Enviar</button>
+          <span id="test-meta" class="meta"></span>
+        </div>
+      </form>
+      <pre id="output" class="output" aria-live="polite"></pre>
+    </section>
+  </main>
+
+  <template id="card-tpl">
+    <article class="card">
+      <header>
+        <h3 class="name"></h3>
+        <span class="badge"></span>
+      </header>
+      <p class="seen"></p>
+      <p class="model mono"></p>
+      <p class="url mono"></p>
+      <dl class="metrics">
+        <div><dt>Batería</dt><dd class="battery"></dd></div>
+        <div class="thermal-row"><dt>SoC</dt><dd><span class="thermal"></span><span class="bar"><span class="fill"></span></span></dd></div>
+        <div><dt>RAM</dt><dd class="ram"></dd></div>
+        <div><dt>Slots</dt><dd class="slots"></dd></div>
+        <div><dt>Último tok/s</dt><dd class="toks"></dd></div>
+        <div><dt>Atendidas</dt><dd class="served"></dd></div>
+      </dl>
+      <p class="reason" hidden></p>
+      <footer>
+        <button type="button" class="btn small drain"></button>
+        <button type="button" class="btn small restart">Reiniciar llama</button>
+        <button type="button" class="btn small danger forget" hidden>Olvidar</button>
+      </footer>
+    </article>
+  </template>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

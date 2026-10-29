@@ -1,0 +1,36 @@
+[package]
+name = "pc-coordinator"
+description = "Coordinador del cluster: registro, política, proxy OpenAI y dashboard"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+bytes.workspace = true
+clap.workspace = true
+futures.workspace = true
+pc-proto.workspace = true
+reqwest = { workspace = true, features = ["stream"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+time.workspace = true
+tokio.workspace = true
+toml.workspace = true
+tower-http.workspace = true
+tower.workspace = true
+qrcode.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+mock-llama.workspace = true
+pc-agent.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+
+[lints]
+workspace = true

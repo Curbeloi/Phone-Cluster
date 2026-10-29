@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'dev.phonecluster.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'dev.phonecluster.app'
+        minSdk 29
+        targetSdk 36
+        versionCode 1
+        versionName '0.1.0'
+        ndk {
+            // pc-agent y llama-server solo se compilan para arm64.
+            abiFilters 'arm64-v8a'
+        }
+    }
+
+    // Los ejecutables van en jniLibs como lib*.so y se extraen a
+    // nativeLibraryDir, el único sitio desde el que una app puede ejecutarlos.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Firma de depuración: la app se instala a mano, no va a Play Store.
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}

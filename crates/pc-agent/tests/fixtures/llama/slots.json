@@ -1,0 +1,17 @@
+[
+  {
+    "id": 0,
+    "n_ctx": 2048,
+    "speculative": false,
+    "is_processing": true,
+    "id_task": 17,
+    "n_prompt_tokens": 42,
+    "n_prompt_tokens_processed": 42,
+    "n_prompt_tokens_cache": 0,
+    "params": {},
+    "next_token": [{ "has_next_token": true, "has_new_line": false, "n_remain": -1, "n_decoded": 12 }],
+    "prompt": "...",
+    "generated": "..."
+  },
+  { "id": 1, "n_ctx": 2048, "speculative": false, "is_processing": false }
+]

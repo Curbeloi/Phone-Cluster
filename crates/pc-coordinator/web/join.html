@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unir un teléfono · Phone Cluster</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9; --surface: #fff; --border: #dfe3e8; --text: #1b1f24; --muted: #5f6b7a;
+      --accent: #2563eb; --accent-text: #fff; --ok: #15803d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f1216; --surface: #171b21; --border: #2a3039; --text: #e6e9ee; --muted: #9aa5b4; --accent: #3b82f6; --ok: #4ade80; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.5 system-ui, -apple-system, Roboto, sans-serif; }
+    main { max-width: 520px; margin: 0 auto; padding: 24px 16px 40px; }
+    h1 { font-size: 26px; margin: 0 0 4px; }
+    .lead { color: var(--muted); margin: 0 0 24px; }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .step h2 { font-size: 18px; margin: 0 0 6px; }
+    .step p { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+    .btn { display: block; text-align: center; text-decoration: none; font-weight: 600; font-size: 18px;
+      padding: 14px; border-radius: 12px; background: var(--accent); color: var(--accent-text); }
+    .btn.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+    details { margin-top: 18px; color: var(--muted); font-size: 15px; }
+    summary { cursor: pointer; }
+    li { margin-bottom: 6px; }
+    code { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Phone Cluster</h1>
+    <p class="lead">Este teléfono va a prestar su procesador a tu Mac. Son dos pasos.</p>
+
+    <section class="step">
+      <h2>1. Instala la app</h2>
+      <p>Descárgala y ábrela. Android te pedirá permitir instalar apps desde el navegador: acepta y pulsa «Instalar».</p>
+      <a id="download" class="btn" href="/app">Descargar la app</a>
+    </section>
+
+    <section class="step">
+      <h2>2. Conéctala con este Mac</h2>
+      <p>Cuando la app esté instalada, vuelve aquí y pulsa el botón. Después acepta el teléfono en el Mac.</p>
+      <a id="connect" class="btn secondary" href="#">Abrir la app y conectar</a>
+    </section>
+
+    <details>
+      <summary>¿Algo no funciona en un Samsung?</summary>
+      <ul>
+        <li>Si el navegador avisa de que el archivo puede ser dañino, pulsa <b>Descargar de todos modos</b>.</li>
+        <li>Si Android dice que está bloqueado: Ajustes → Seguridad y privacidad → <b>Bloqueador automático</b> → desactivar (puedes volver a activarlo después).</li>
+        <li>Si Play Protect pregunta, elige <b>Instalar de todos modos</b>.</li>
+        <li>Si el botón 2 no abre la app, ábrela tú y escribe esta dirección: <code id="addr"></code></li>
+      </ul>
+    </details>
+  </main>
+  <script>
+    "use strict";
+    // La página la sirve el propio Mac: su dirección es la de esta página.
+    const host = location.hostname;
+    const port = location.port || "80";
+    const fallback = encodeURIComponent(`${location.origin}/app`);
+    document.getElementById("connect").href =
+      `intent://connect?host=${host}&port=${port}#Intent;scheme=phonecluster;package=dev.phonecluster.app;S.browser_fallback_url=${fallback};end`;
+    document.getElementById("addr").textContent = `${host}:${port}`;
+  </script>
+</body>
+</html>

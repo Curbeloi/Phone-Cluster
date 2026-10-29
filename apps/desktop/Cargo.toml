@@ -1,0 +1,24 @@
+[package]
+name = "phone-cluster-desktop"
+description = "App de Mac: arranca el coordinador y muestra el dashboard en su ventana"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+anyhow.workspace = true
+pc-coordinator = { path = "../../crates/pc-coordinator" }
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2.12.5", features = [] }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

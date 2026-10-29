@@ -1,0 +1,29 @@
+# Copia este fichero a coordinator.toml y cambia el token.
+listen = "0.0.0.0:7800"              # API OpenAI + heartbeats (LAN)
+dashboard_listen = "127.0.0.1:7801"  # dashboard, sin token: déjalo en loopback
+token = "cambia-esto"
+offline_after_secs = 15
+max_temp_c = 45.0          # batería
+resume_temp_c = 40.0
+max_soc_temp_c = 80.0      # procesador
+resume_soc_temp_c = 70.0
+min_battery_pct = 20
+max_retries = 2
+require_token_for_inference = false
+
+# Instalación remota de teléfonos por ADB inalámbrico (opcional; activa por defecto).
+[adb]
+enabled = true
+# adb_path = "/Users/tu-usuario/Library/Android/sdk/platform-tools/adb"
+artifacts_dir = "android/dist"          # lo genera tools/build-android.sh
+remote_dir = "/data/local/tmp/phone-cluster"
+llama_port = 8080
+llama_args = ["-c", "4096", "-np", "2"]
+# model_alias = "qwen2.5-1.5b"          # por defecto, el nombre del .gguf
+
+# Modo dividido: las capas del modelo repartidas entre teléfonos (se activa
+# desde el dashboard). Este Mac corre la cabeza; los teléfonos, rpc-server.
+[split]
+# llama_bin = "android/dist/macos/llama-server"   # por defecto, <artifacts_dir>/macos/llama-server
+head_port = 7810           # solo en 127.0.0.1
+ctx_size = 4096

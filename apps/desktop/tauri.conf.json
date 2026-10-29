@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Phone Cluster",
+  "version": "0.1.0",
+  "identifier": "dev.phonecluster.desktop",
+  "build": {
+    "frontendDist": "ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Phone Cluster",
+        "url": "index.html",
+        "width": 1200,
+        "height": 840,
+        "minWidth": 380,
+        "minHeight": 520
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "DeveloperTool",
+    "shortDescription": "Varios teléfonos Android como un único endpoint OpenAI",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ],
+    "resources": {
+      "../../android/dist/phone-cluster.apk": "android/phone-cluster.apk",
+      "../../android/dist/pc-agent": "android/pc-agent",
+      "../../android/dist/llama-server": "android/llama-server",
+      "../../android/dist/macos/llama-server": "android/macos/llama-server"
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": "-"
+    }
+  }
+}
