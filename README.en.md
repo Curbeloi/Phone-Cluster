@@ -16,7 +16,8 @@ http://<your-computer-IP>:7800/v1
 > **It does not use OpenAI, the company.** "OpenAI API" only refers to the
 > **format** of the requests, which many AI libraries and programs already
 > understand. Everything runs on your phones and your network. You don't
-> need an OpenAI account or key, and nothing is sent to the internet.
+> need an OpenAI account or key, and nothing is sent to the internet while
+> you use it.
 
 ## How it works
 

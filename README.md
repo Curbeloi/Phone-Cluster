@@ -16,7 +16,7 @@ http://<IP-de-tu-PC>:7800/v1
 > **No usa OpenAI, la empresa.** "API de OpenAI" se refiere solo al
 > **formato** de las peticiones: el mismo que entienden muchas librerías y
 > programas de IA. Todo se ejecuta en tus teléfonos y en tu red. No hace
-> falta cuenta ni clave de OpenAI, y no se envía nada a internet.
+> falta cuenta ni clave de OpenAI, y al usarlo no se envía nada a internet.
 
 ## Cómo funciona
 
