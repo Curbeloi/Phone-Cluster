@@ -3,7 +3,7 @@
 **Español** · [English](README.en.md)
 
 Convierte varios teléfonos Android en **un solo servidor de IA** que tu PC
-expone con la API de OpenAI. Cada teléfono ejecuta un modelo de lenguaje con
+expone con una API compatible con OpenAI. Cada teléfono ejecuta un modelo de lenguaje con
 [llama.cpp](https://github.com/ggml-org/llama.cpp), y el PC reparte el
 trabajo entre ellos.
 
@@ -12,6 +12,11 @@ Para cualquier programa que hable con OpenAI, el cluster es un endpoint más:
 ```
 http://<IP-de-tu-PC>:7800/v1
 ```
+
+> **No usa OpenAI, la empresa.** "API de OpenAI" se refiere solo al
+> **formato** de las peticiones: el mismo que entienden muchas librerías y
+> programas de IA. Todo se ejecuta en tus teléfonos y en tu red. No hace
+> falta cuenta ni clave de OpenAI, y no se envía nada a internet.
 
 ## Cómo funciona
 
