@@ -243,7 +243,7 @@ async fn auth_and_incompatible_heartbeats() {
             "node_id": "8f0c2a4e-1b7d-4c3e-9a51-0d6f2b8e7c10",
             "name": "futuro",
             "agent_version": "9.0.0",
-            "advertise_url": "http://10.0.0.9:8080",
+            "advertise_url": "http://127.0.0.1:8080",
             "sent_at": "2026-10-28T15:04:05Z"
         })
     };
@@ -290,6 +290,18 @@ async fn auth_and_incompatible_heartbeats() {
     assert_eq!(res.status(), 200);
     let v: Value = serde_json::from_slice(&res.bytes().await.unwrap()).unwrap();
     assert_eq!(v, json!({"commands": [], "mode": "solo"}));
+
+    // Nadie puede hacerse pasar por la cabeza del modo dividido.
+    let mut fake = hb(1);
+    fake["node_id"] = json!(pc_coordinator::split::head_id());
+    let res = http()
+        .post(&url)
+        .bearer_auth(TOKEN)
+        .json(&fake)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(res.status(), 422);
 
     // Administración: token en el listener de la API, libre en el del dashboard.
     let admin = format!("{}/api/v1/nodes", c.api);

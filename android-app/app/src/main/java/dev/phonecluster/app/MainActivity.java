@@ -2,8 +2,10 @@ package dev.phonecluster.app;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -148,7 +150,7 @@ public class MainActivity extends Activity {
     /**
      * Enlace {@code phonecluster://connect?host=…&port=…} de la página del QR:
      * guarda la dirección del Mac y se une sin buscar. Para probar sin tocar la
-     * pantalla también vale
+     * pantalla, en un build depurable, también vale
      * {@code am start -n dev.phonecluster.app/.MainActivity --es coordinator http://10.0.2.2:7800 --ez join true}.
      */
     private void handleIntent(Intent intent) {
@@ -158,22 +160,55 @@ public class MainActivity extends Activity {
             String host = data.getQueryParameter("host");
             String port = data.getQueryParameter("port");
             if (isLanAddress(host) && isPort(port)) {
-                address.setText(host + ":" + port);
-                saveAddress();
-                if (Status.get().phase == Status.Phase.STOPPED) {
-                    askPermissions();
-                    start();
+                String wanted = Net.normalizeAddress(host + ":" + port);
+                SharedPreferences p = ClusterService.prefs(this);
+                String current = p.getString("manual_address", p.getString("coordinator", null));
+                if (current == null || current.equals(wanted)) {
+                    connectTo(host + ":" + port);
+                } else {
+                    // Un enlace no cambia de Mac en silencio: podría venir de cualquier web.
+                    new AlertDialog.Builder(this)
+                            .setTitle("¿Cambiar de Mac?")
+                            .setMessage("Este teléfono está unido a " + current
+                                    + ". ¿Quieres unirlo al Mac de " + wanted + "?")
+                            .setPositiveButton("Cambiar", (d, w) -> {
+                                address.setText(host + ":" + port);
+                                saveAddress();
+                                if (Status.get().phase == Status.Phase.STOPPED) {
+                                    connectTo(host + ":" + port);
+                                    return;
+                                }
+                                // Parar el servicio y unirse al nuevo cuando haya parado.
+                                startService(new Intent(this, ClusterService.class)
+                                        .setAction(ClusterService.ACTION_STOP));
+                                ui.postDelayed(() -> connectTo(host + ":" + port), 2000);
+                            })
+                            .setNegativeButton("Cancelar", null)
+                            .show();
                 }
             }
             setIntent(new Intent(this, MainActivity.class)); // consumido
             return;
         }
+        // Extras de prueba (am start): solo en builds depurables. Si no,
+        // cualquier app del teléfono podría unirlo a otro coordinador.
+        boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        if (!debuggable) return;
         String coordinator = intent.getStringExtra("coordinator");
         if (coordinator != null) {
             address.setText(coordinator);
             saveAddress();
         }
         if (intent.getBooleanExtra("join", false) && Status.get().phase == Status.Phase.STOPPED) {
+            start();
+        }
+    }
+
+    private void connectTo(String hostPort) {
+        address.setText(hostPort);
+        saveAddress();
+        if (Status.get().phase == Status.Phase.STOPPED) {
+            askPermissions();
             start();
         }
     }

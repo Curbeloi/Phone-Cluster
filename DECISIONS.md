@@ -392,3 +392,36 @@ de RAM al modo dividido. Ahora el escaneo de ADB mira si está instalado
 `dev.phonecluster.app`. Si lo está, para el agente de ADB y marca el
 dispositivo como «Usa la app». Reinstalar a mano desde el panel sigue
 forzando la instalación por ADB.
+
+**D-59 · Revisión de seguridad antes de publicar.**
+- *Corregido:* la app Android solo acepta como `model_file` un nombre `.gguf`
+  sin rutas, porque llega por la red. Los extras de prueba `coordinator`/`join`
+  de `MainActivity` solo funcionan en builds depurables; si no, cualquier app
+  del teléfono podría unirlo a otro coordinador. Si un enlace del QR apunta a
+  otro Mac distinto del guardado, la app pide confirmación antes de cambiar.
+  El coordinador rechaza heartbeats que usen el `node_id` reservado de la
+  cabeza del modo dividido.
+- *Limitación conocida:* hay **un solo token**. Lo usan los agentes y la
+  administración por el puerto de la API. Cualquier teléfono aceptado lo
+  tiene, así que podría administrar el coordinador desde la LAN. Lo correcto
+  es una credencial por nodo, ligada a su `node_id` y revocable, que solo
+  valga para heartbeats y para descargar el modelo. Con ella también se podría
+  impedir que un nodo use el `node_id` de otro. Queda pendiente.
+- *Aceptado:* la instalación automática por ADB solo llega a teléfonos que ya
+  confían en este Mac: emparejados por código o con la huella USB aceptada.
+  `adb connect` a un servicio mDNS sin emparejar falla en la autenticación
+  TLS mutua de ADB, así que un dispositivo ajeno que se anuncie no recibe el
+  token.
+
+**D-60 · El `advertise_url` tiene que ser la IP que envía el heartbeat.** El
+proxy y la cabeza del modo dividido se conectan a la dirección que anuncia
+cada nodo. Con el token, un agente podía anunciar cualquier máquina, incluido
+el propio Mac, y el coordinador le enviaría peticiones (SSRF). También podía
+colar texto en el `--rpc` de la cabeza. Ahora el coordinador:
+- exige que la IP de `advertise_url` sea la IP desde la que llega el
+  heartbeat;
+- la reconstruye como `http://<IP>:<puerto>`, sin ruta ni nombre;
+- rechaza el `node_id` reservado de la cabeza antes de mirar la versión.
+
+Los teléfonos ya anunciaban la IP con la que llegan al Mac, y el emulador
+llega por `adb forward` desde 127.0.0.1, así que ninguno cambia.

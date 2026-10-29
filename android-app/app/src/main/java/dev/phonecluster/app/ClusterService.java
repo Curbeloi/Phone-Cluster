@@ -198,6 +198,10 @@ public class ClusterService extends Service {
             size = again.optLong("model_size", -1);
             cfg = again;
         }
+        // El nombre llega por la red: solo un nombre de fichero .gguf, sin rutas.
+        if (!file.matches("[A-Za-z0-9._-]+\\.gguf") || file.startsWith(".")) {
+            throw new IOException("nombre de modelo no válido: " + file);
+        }
         File dir = new File(getFilesDir(), "models");
         dir.mkdirs();
         File model = new File(dir, file);

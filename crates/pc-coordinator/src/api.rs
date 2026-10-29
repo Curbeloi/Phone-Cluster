@@ -199,6 +199,21 @@ fn is_local_request(headers: &HeaderMap, method: &axum::http::Method) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn advertise_url_must_be_the_sender_ip() {
+        let phone: std::net::IpAddr = "192.168.1.9".parse().unwrap();
+        assert_eq!(
+            checked_advertise_url("http://192.168.1.9:8080/x?y#z", phone).unwrap(),
+            "http://192.168.1.9:8080"
+        );
+        assert!(checked_advertise_url("http://127.0.0.1:7801", phone).is_err());
+        assert!(checked_advertise_url("http://evil.example:80", phone).is_err());
+        assert!(checked_advertise_url("http://192.168.1.9,10.0.0.1:8080", phone).is_err());
+        assert!(checked_advertise_url("ftp://192.168.1.9:21", phone).is_err());
+        let mapped: std::net::IpAddr = "::ffff:192.168.1.9".parse().unwrap();
+        assert!(checked_advertise_url("http://192.168.1.9:8080", mapped).is_ok());
+    }
     use axum::http::Method;
 
     fn headers(pairs: &[(&'static str, &str)]) -> HeaderMap {
@@ -254,12 +269,21 @@ async fn healthz() -> Json<serde_json::Value> {
 
 async fn heartbeat(
     State(s): State<AppState>,
+    axum::extract::ConnectInfo(peer): axum::extract::ConnectInfo<std::net::SocketAddr>,
     headers: HeaderMap,
     body: Bytes,
 ) -> Result<Json<HeartbeatResponse>, ApiError> {
     authorize(&s, &headers, Scope::Agent)?;
     let header: HeartbeatHeader = serde_json::from_slice(&body)
         .map_err(|e| ApiError::unprocessable("invalid_heartbeat", e.to_string()))?;
+    // La cabeza del modo dividido la registra el propio coordinador: nadie
+    // de fuera puede hacerse pasar por ella y llevarse sus peticiones.
+    if header.node_id == Some(crate::split::head_id()) {
+        return Err(ApiError::unprocessable(
+            "reserved_node_id",
+            "ese node_id está reservado",
+        ));
+    }
     match header.proto_version {
         Some(PROTO_VERSION) => {}
         Some(v) => {
@@ -276,11 +300,42 @@ async fn heartbeat(
             ));
         }
     }
-    let hb: Heartbeat = serde_json::from_slice(&body)
+    let mut hb: Heartbeat = serde_json::from_slice(&body)
         .map_err(|e| ApiError::unprocessable("invalid_heartbeat", e.to_string()))?;
     hb.validate()
         .map_err(|e| ApiError::unprocessable("invalid_heartbeat", e.to_string()))?;
+    hb.advertise_url = checked_advertise_url(&hb.advertise_url, peer.ip())
+        .map_err(|e| ApiError::unprocessable("invalid_advertise_url", e))?;
     Ok(Json(s.registry.heartbeat(hb, Instant::now())))
+}
+
+/// `advertise_url` reducido a `http://<IP>:<puerto>`, con la IP desde la que
+/// llega el heartbeat. Así un agente no puede hacer que el proxy (o la cabeza
+/// del modo dividido) envíe peticiones a otra máquina (D-60).
+pub fn checked_advertise_url(url: &str, peer: std::net::IpAddr) -> Result<String, String> {
+    let u = reqwest::Url::parse(url).map_err(|e| format!("advertise_url no válida: {e}"))?;
+    if !matches!(u.scheme(), "http" | "https") {
+        return Err("advertise_url debe ser http o https".into());
+    }
+    let ip: std::net::IpAddr = u
+        .host_str()
+        .unwrap_or_default()
+        .trim_matches(['[', ']'])
+        .parse()
+        .map_err(|_| "advertise_url debe usar una IP, no un nombre".to_string())?;
+    if ip.to_canonical() != peer.to_canonical() {
+        return Err(format!(
+            "advertise_url apunta a {ip}, pero el heartbeat llega desde {peer}"
+        ));
+    }
+    let port = u
+        .port_or_known_default()
+        .ok_or("advertise_url sin puerto")?;
+    Ok(format!(
+        "{}://{}",
+        u.scheme(),
+        std::net::SocketAddr::new(ip, port)
+    ))
 }
 
 async fn nodes(
